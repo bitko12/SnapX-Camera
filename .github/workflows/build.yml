@@ -20,7 +20,12 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential libssl-dev libffi-dev python3-dev autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev openjdk-17-jdk
-          pip install --upgrade buildozer cython kivy
+          pip install --upgrade "buildozer<1.6.0" "cython<3.0.0" kivy python-for-android
+
+      - name: Setup Android NDK
+        uses: nsetup/setup-android-ndk@v1
+        with:
+          ndk-version: r25b
 
       - name: Accept Android SDK Licenses & Build
         run: |
