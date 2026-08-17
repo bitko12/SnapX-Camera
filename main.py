@@ -5,6 +5,7 @@ from kivy.app import App
 from kivy.uix.camera import Camera
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -87,89 +88,78 @@ class ToolButton(Button):
 class CameraScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        root = FloatLayout()
+
+        root = BoxLayout(orientation='vertical')
 
         with root.canvas.before:
-            Color(0.05, 0.06, 0.10, 1)
+            Color(0.07, 0.08, 0.11, 1)
             Rectangle(pos=(0, 0), size=Window.size)
 
-        status_bar = FloatLayout(size_hint=(0.9, None), height=44, pos_hint={'center_x': 0.5, 'top': 0.99})
-        with status_bar.canvas.before:
-            Color(1, 1, 1, 0.08)
-            RoundedRectangle(pos=(0, 0), size=status_bar.size, radius=[18, 18, 18, 18])
-        status_label_left = Label(text='9:41', color=(1, 1, 1, 0.95), font_size='16sp', pos_hint={'x': 0.08, 'center_y': 0.5})
-        status_label_right = Label(text='SnapX', color=(1, 1, 1, 0.9), font_size='16sp', pos_hint={'right': 0.92, 'center_y': 0.5})
-        status_bar.add_widget(status_label_left)
-        status_bar.add_widget(status_label_right)
-        root.add_widget(status_bar)
-
-        self.camera = Camera(play=True, index=0)
-        self.camera.pos_hint = {'center_x': 0.5, 'center_y': 0.56}
-        self.camera.size_hint = (0.92, 0.68)
-        root.add_widget(self.camera)
-
-        self.camera_overlay = FloatLayout(size_hint=(0.92, 0.68), pos_hint={'center_x': 0.5, 'center_y': 0.56})
-        with self.camera_overlay.canvas.before:
-            Color(1, 1, 1, 0.05)
-            RoundedRectangle(pos=(0, 0), size=self.camera_overlay.size, radius=[26, 26, 26, 26])
-        root.add_widget(self.camera_overlay)
-
-        side_panel = BoxLayout(
-            orientation='vertical',
-            size_hint=(None, None),
-            size=(52, 220),
-            spacing=12,
-            pos_hint={'right': 0.96, 'top': 0.82}
+        header = BoxLayout(size_hint_y=0.1, padding=[20, 10], spacing=10)
+        with header.canvas.before:
+            Color(0.10, 0.11, 0.16, 1)
+            Rectangle(pos=(0, 0), size=header.size)
+        title = Label(
+            text='SnapX Camera',
+            font_size='22sp',
+            bold=True,
+            color=(0, 0.9, 1, 1),
+            halign='left',
+            text_size=self.size,
+            valign='middle'
         )
-        for icon in ['⚡', '🎵', '✨', '⏱️']:
-            side_panel.add_widget(ToolButton(icon))
-        root.add_widget(side_panel)
+        header.add_widget(title)
+        root.add_widget(header)
 
-        bottom_bar = FloatLayout(
-            size_hint=(0.92, None),
-            height=110,
-            pos_hint={'center_x': 0.5, 'y': 0.02}
+        preview = RelativeLayout(size_hint_y=0.75, padding=10)
+        self.camera = Camera(resolution=(640, 480), play=True)
+        preview.add_widget(self.camera)
+        root.add_widget(preview)
+
+        controls = BoxLayout(size_hint_y=0.15, padding=[20, 15], spacing=20)
+        with controls.canvas.before:
+            Color(0.10, 0.11, 0.16, 1)
+            Rectangle(pos=(0, 0), size=controls.size)
+
+        gallery_btn = Button(
+            text='Gallery',
+            size_hint_x=0.25,
+            background_normal='',
+            background_color=(0.16, 0.18, 0.24, 1),
+            color=(1, 1, 1, 1),
+            bold=True
         )
-        with bottom_bar.canvas.before:
-            Color(1, 1, 1, 0.08)
-            RoundedRectangle(pos=(0, 0), size=bottom_bar.size, radius=[26, 26, 26, 26])
+        controls.add_widget(gallery_btn)
 
-        left_box = FloatLayout(size_hint=(1/3, 1), pos_hint={'x': 0, 'y': 0})
-        gallery_btn = ToolButton('🖼️')
-        gallery_btn.pos_hint = {'center_x': 0.35, 'center_y': 0.5}
-        left_box.add_widget(gallery_btn)
-        bottom_bar.add_widget(left_box)
-
-        center_box = FloatLayout(size_hint=(1/3, 1), pos_hint={'center_x': 0.5, 'y': 0})
-        self.shutter_btn = Button(
-            size_hint=(None, None),
-            size=(82, 82),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            background_color=(0, 0, 0, 0)
+        self.capture_btn = Button(
+            text='CAPTURE',
+            size_hint_x=0.5,
+            background_normal='',
+            background_color=(0, 0.4, 1, 1),
+            color=(1, 1, 1, 1),
+            bold=True,
+            font_size='18sp'
         )
-        with self.shutter_btn.canvas.before:
-            Color(1, 1, 1, 0.95)
-            Line(circle=(self.shutter_btn.center_x + 41, self.shutter_btn.center_y + 41, 38), width=3.5)
-            Color(1, 1, 1, 0.25)
-            Ellipse(pos=(self.shutter_btn.x + 8, self.shutter_btn.y + 8), size=(66, 66))
-        self.shutter_btn.bind(on_press=self.capture_photo)
-        center_box.add_widget(self.shutter_btn)
-        bottom_bar.add_widget(center_box)
+        self.capture_btn.bind(on_press=self.capture)
+        controls.add_widget(self.capture_btn)
 
-        right_box = FloatLayout(size_hint=(1/3, 1), pos_hint={'right': 1, 'y': 0})
-        hdr_btn = ToolButton('HDR')
-        hdr_btn.font_size = '11sp'
-        hdr_btn.bold = True
-        hdr_btn.pos_hint = {'center_x': 0.65, 'center_y': 0.5}
-        right_box.add_widget(hdr_btn)
-        bottom_bar.add_widget(right_box)
+        filter_btn = Button(
+            text='Filter',
+            size_hint_x=0.25,
+            background_normal='',
+            background_color=(0.16, 0.18, 0.24, 1),
+            color=(1, 1, 1, 1),
+            bold=True
+        )
+        controls.add_widget(filter_btn)
 
-        root.add_widget(bottom_bar)
+        root.add_widget(controls)
         self.add_widget(root)
 
-    def capture_photo(self, instance):
-        anim = Animation(size=(72, 72), duration=0.08) + Animation(size=(82, 82), duration=0.08)
-        anim.start(instance)
+    def capture(self, instance=None):
+        if instance is not None:
+            anim = Animation(size=(72, 72), duration=0.08) + Animation(size=(82, 82), duration=0.08)
+            anim.start(instance)
 
         folder = os.path.join(os.getcwd(), 'snapx_photos')
         os.makedirs(folder, exist_ok=True)
@@ -183,9 +173,10 @@ class CameraScreen(Screen):
             print(f'SnapX: Camera capture failed: {e}')
             return
 
-        preview_screen = self.manager.get_screen('preview')
-        preview_screen.show_image(path)
-        self.manager.current = 'preview'
+        if self.manager is not None and 'preview' in self.manager.screen_names:
+            preview_screen = self.manager.get_screen('preview')
+            preview_screen.show_image(path)
+            self.manager.current = 'preview'
 
 
 class PreviewScreen(Screen):
