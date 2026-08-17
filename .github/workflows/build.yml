@@ -22,11 +22,12 @@ jobs:
           sudo apt install -y build-essential libssl-dev libffi-dev python3-dev autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev openjdk-17-jdk
           pip install --upgrade buildozer cython kivy python-for-android
 
-      - name: Accept Android SDK Licenses
+      - name: Install Android Build Tools & Accept Licenses
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;31.0.0" "platforms;android-31"
 
       - name: Build with Buildozer
         run: |
