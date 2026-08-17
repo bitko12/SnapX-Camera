@@ -20,11 +20,11 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential libssl-dev libffi-dev python3-dev autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev openjdk-17-jdk
-          pip install --upgrade "buildozer<1.6.0" "cython<3.0.0" kivy python-for-android
+          pip install --upgrade buildozer cython kivy python-for-android
 
-      - name: Accept Android SDK Licenses & Build
+      - name: Build with Buildozer
         run: |
-          yes | buildozer -v android debug
+          ACCEPT_BUILD_TOOLS_CHECKSUM=true buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
